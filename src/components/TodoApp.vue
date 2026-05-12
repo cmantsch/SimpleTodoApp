@@ -251,8 +251,8 @@ h1.title:hover {
   border-radius: 4px 4px 0 0;
   outline: none;
   background: rgba(79, 70, 229, 0.06);
-  padding: 2px 6px;
-  margin: 0 -6px;
+  padding: 0 6px;
+  margin: 0 -6px -2px;
   width: calc(100% + 12px);
   caret-color: var(--accent);
 }
