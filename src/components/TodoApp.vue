@@ -238,6 +238,7 @@ function lockHorizontal() {
 
 h1.title {
   cursor: text;
+  width: fit-content;
   border-radius: 6px;
   padding: 2px 6px;
   margin: -2px -6px;
@@ -262,11 +263,17 @@ h1.title:hover {
   outline: none;
   box-shadow: 0 2px 0 0 var(--accent);
   border-radius: 4px 4px 0 0;
-  background: rgba(79, 70, 229, 0.06);
+  background-image: linear-gradient(rgba(79, 70, 229, 0.06), rgba(79, 70, 229, 0.06));
+  background-repeat: no-repeat;
+  background-position: left center;
+  background-size: 0% 100%;
+  animation: title-expand 180ms ease forwards;
   padding: 0 6px;
-  margin: 0 -6px;
-  width: calc(100% + 12px);
   caret-color: var(--accent);
+}
+
+@keyframes title-expand {
+  to { background-size: 100% 100%; }
 }
 
 .subtitle {
