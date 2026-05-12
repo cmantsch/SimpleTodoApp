@@ -103,19 +103,24 @@ function lockHorizontal() {
   <div class="layout">
     <header class="header">
       <div class="header-row">
-        <h1 v-if="!editingName" class="title" @click="startNameEdit" title="Click to rename">
-          {{ listName }}
-        </h1>
-        <input
-          v-else
-          ref="nameInput"
-          class="title title-input"
-          v-model="editNameValue"
-          maxlength="60"
-          @blur="saveName"
-          @keydown.enter.prevent="saveName"
-          @keydown.escape="cancelNameEdit"
-        />
+        <div class="title-wrap">
+          <h1
+            class="title"
+            :style="{ visibility: editingName ? 'hidden' : 'visible' }"
+            @click="startNameEdit"
+            title="Click to rename"
+          >{{ listName }}</h1>
+          <input
+            v-if="editingName"
+            ref="nameInput"
+            class="title title-input"
+            v-model="editNameValue"
+            maxlength="60"
+            @blur="saveName"
+            @keydown.enter.prevent="saveName"
+            @keydown.escape="cancelNameEdit"
+          />
+        </div>
         <button class="reset-btn" @click="resetApp" title="Reset — clears all tasks">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path d="M2 7a5 5 0 1 0 1.5-3.5L2 2v3h3L3.5 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
@@ -244,7 +249,15 @@ h1.title:hover {
   text-decoration-color: var(--text-muted);
 }
 
+.title-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
 .title-input {
+  position: absolute;
+  inset: 0;
   font-family: inherit;
   border: none;
   outline: none;
