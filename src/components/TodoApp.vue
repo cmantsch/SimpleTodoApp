@@ -234,6 +234,15 @@ function lockHorizontal() {
 
 h1.title {
   cursor: text;
+  text-decoration: underline;
+  text-decoration-style: dashed;
+  text-decoration-color: transparent;
+  text-underline-offset: 4px;
+  transition: text-decoration-color 200ms ease;
+}
+
+h1.title:hover {
+  text-decoration-color: var(--text-muted);
 }
 
 .title-input {
