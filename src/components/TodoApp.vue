@@ -103,7 +103,7 @@ function lockHorizontal() {
   <div class="layout">
     <header class="header">
       <div class="header-row">
-        <div class="title-wrap">
+        <div class="title-wrap" :class="{ 'title-wrap--editing': editingName }">
           <h1
             class="title"
             :style="{ visibility: editingName ? 'hidden' : 'visible' }"
@@ -251,8 +251,11 @@ h1.title:hover {
 
 .title-wrap {
   position: relative;
-  flex: 1;
   min-width: 0;
+}
+
+.title-wrap--editing {
+  flex: 1;
 }
 
 .title-input {
