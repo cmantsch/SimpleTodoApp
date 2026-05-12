@@ -120,11 +120,8 @@ function lockHorizontal() {
           </svg>
         </button>
       </div>
-      <p class="subtitle" v-if="activeTodos.length">
-        {{ activeTodos.length }} remaining
-      </p>
-      <p class="subtitle done-all" v-else-if="todos.length">
-        All done ✓
+      <p class="subtitle" :class="{ 'done-all': todos.length && !activeTodos.length }">
+        {{ todos.length && !activeTodos.length ? 'All done ✓' : `${activeTodos.length} remaining` }}
       </p>
     </header>
 
