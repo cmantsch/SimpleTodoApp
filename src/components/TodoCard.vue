@@ -98,7 +98,7 @@ onMounted(() => {
 
 .card--removing {
   opacity: 0 !important;
-  transform: translateX(16px) scale(0.98);
+  transform: scale(0.98);
   pointer-events: none;
   transition: opacity 200ms ease, transform 200ms ease;
 }
@@ -188,8 +188,8 @@ onMounted(() => {
 
 .delete-btn {
   flex-shrink: 0;
-  width: 28px;
-  height: 28px;
+  width: 36px;
+  height: 36px;
   border: none;
   background: none;
   border-radius: 6px;
@@ -209,5 +209,16 @@ onMounted(() => {
 .delete-btn:hover {
   color: #ef4444;
   background: rgba(239, 68, 68, 0.08);
+}
+
+@media (hover: none) {
+  .delete-btn {
+    opacity: 0.4;
+  }
+  .delete-btn:active {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.08);
+    opacity: 1;
+  }
 }
 </style>

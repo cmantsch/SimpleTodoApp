@@ -191,6 +191,12 @@ function lockHorizontal() {
   min-height: 100vh;
 }
 
+@media (max-width: 480px) {
+  .layout {
+    padding: 28px 12px 60px;
+  }
+}
+
 .header {
   margin-bottom: 32px;
 }
@@ -203,8 +209,8 @@ function lockHorizontal() {
 
 .reset-btn {
   flex-shrink: 0;
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
   border: none;
   background: none;
   border-radius: 6px;
@@ -228,8 +234,14 @@ function lockHorizontal() {
   background: var(--border);
 }
 
+@media (hover: none) {
+  .reset-btn {
+    opacity: 0.35;
+  }
+}
+
 .title {
-  font-size: 32px;
+  font-size: clamp(22px, 7vw, 32px);
   font-weight: 600;
   letter-spacing: -0.5px;
   color: var(--text-primary);
@@ -304,7 +316,7 @@ h1.title:hover {
   border-radius: var(--radius);
   background: var(--surface);
   font-family: inherit;
-  font-size: 15px;
+  font-size: 16px;
   color: var(--text-primary);
   outline: none;
   transition: border-color var(--transition), box-shadow var(--transition);
