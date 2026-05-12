@@ -60,6 +60,8 @@ function addTodo() {
 function resetApp() {
   todos.value = []
   localStorage.removeItem(STORAGE_KEY)
+  listName.value = 'Todo'
+  localStorage.removeItem(NAME_KEY)
 }
 
 function removeTodo(id) {
