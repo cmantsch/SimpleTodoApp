@@ -248,10 +248,13 @@ h1.title:hover {
 .title-input {
   font-family: inherit;
   border: none;
+  border-bottom: 2px solid var(--accent);
+  border-radius: 4px 4px 0 0;
   outline: none;
-  background: transparent;
-  padding: 0;
-  width: 100%;
+  background: rgba(79, 70, 229, 0.06);
+  padding: 2px 6px;
+  margin: 0 -6px;
+  width: calc(100% + 12px);
   caret-color: var(--accent);
 }
 
