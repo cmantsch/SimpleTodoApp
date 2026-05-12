@@ -238,15 +238,14 @@ function lockHorizontal() {
 
 h1.title {
   cursor: text;
-  text-decoration: underline;
-  text-decoration-style: dashed;
-  text-decoration-color: transparent;
-  text-underline-offset: 4px;
-  transition: text-decoration-color 200ms ease;
+  border-radius: 6px;
+  padding: 2px 6px;
+  margin: -2px -6px;
+  transition: background 200ms ease;
 }
 
 h1.title:hover {
-  text-decoration-color: var(--text-muted);
+  background: rgba(0, 0, 0, 0.05);
 }
 
 .title-wrap {
