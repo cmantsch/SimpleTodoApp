@@ -1,7 +1,7 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
 
-defineProps({
+const props = defineProps({
   todo: { type: Object, required: true },
   removing: { type: Boolean, default: false },
 })
@@ -12,6 +12,33 @@ const isNew = ref(true)
 onMounted(() => {
   setTimeout(() => { isNew.value = false }, 280)
 })
+
+const editing = ref(false)
+const editValue = ref('')
+const editInput = ref(null)
+
+async function startEdit() {
+  if (editing.value) return
+  editValue.value = props.todo.text
+  editing.value = true
+  await nextTick()
+  const el = editInput.value
+  if (el) {
+    el.focus()
+    el.setSelectionRange(el.value.length, el.value.length)
+  }
+}
+
+function saveEdit() {
+  if (!editing.value) return
+  const trimmed = editValue.value.trim()
+  if (trimmed) props.todo.text = trimmed
+  editing.value = false
+}
+
+function cancelEdit() {
+  editing.value = false
+}
 </script>
 
 <template>
@@ -49,7 +76,24 @@ onMounted(() => {
       </span>
     </label>
 
-    <span class="todo-text">{{ todo.text }}</span>
+    <div class="text-wrap" :class="{ 'text-wrap--editing': editing }">
+      <span
+        v-if="!editing"
+        class="todo-text"
+        @click="startEdit"
+        title="Click to edit"
+      >{{ todo.text }}</span>
+      <input
+        v-else
+        ref="editInput"
+        v-model="editValue"
+        class="todo-text todo-text-input"
+        maxlength="200"
+        @blur="saveEdit"
+        @keydown.enter.prevent="saveEdit"
+        @keydown.escape.prevent="cancelEdit"
+      />
+    </div>
 
     <button class="delete-btn" @click="$emit('remove')" title="Delete task">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -170,20 +214,65 @@ onMounted(() => {
   to   { transform: scale(1); opacity: 1; }
 }
 
+.text-wrap {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
 .todo-text {
   flex: 1;
+  min-width: 0;
   font-size: 15px;
   color: var(--text-primary);
   line-height: 1.4;
-  transition: color var(--transition);
+  transition: color var(--transition), background var(--transition);
   text-decoration-line: none;
   text-decoration-color: transparent;
+  padding: 4px 8px;
+  margin: -4px -8px;
+  border-radius: 6px;
+  cursor: text;
+  word-break: break-word;
+}
+
+.todo-text:hover {
+  background: rgba(0, 0, 0, 0.04);
 }
 
 .card--done .todo-text {
   color: var(--text-muted);
   text-decoration-line: line-through;
   text-decoration-color: var(--text-muted);
+}
+
+.todo-text-input {
+  font-family: inherit;
+  font-weight: inherit;
+  border: none;
+  outline: none;
+  background: rgba(79, 70, 229, 0.06);
+  box-shadow: inset 0 -2px 0 0 var(--accent);
+  border-radius: 6px 6px 0 0;
+  caret-color: var(--accent);
+  animation: text-edit-in 180ms ease;
+}
+
+.todo-text-input:hover {
+  background: rgba(79, 70, 229, 0.06);
+}
+
+@keyframes text-edit-in {
+  from {
+    background: rgba(79, 70, 229, 0);
+    box-shadow: inset 0 -2px 0 0 rgba(79, 70, 229, 0);
+  }
+}
+
+.text-wrap--editing {
+  cursor: text;
 }
 
 .delete-btn {
