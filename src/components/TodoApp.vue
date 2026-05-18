@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import draggable from 'vuedraggable'
 import TodoCard from './TodoCard.vue'
 
@@ -126,6 +126,52 @@ function clearDone() {
   }, 200)
 }
 
+const pendingAction = ref(null)
+let pendingTimer = null
+
+function requestConfirm(action) {
+  if (action === 'clearDone' && !todos.value.some(t => t.done)) return
+  if (action === 'reset' && todos.value.length === 0 && listName.value === 'Todo') return
+
+  if (pendingAction.value === action) {
+    pendingAction.value = null
+    clearTimeout(pendingTimer)
+    if (action === 'reset') resetApp()
+    else if (action === 'clearDone') clearDone()
+    return
+  }
+  pendingAction.value = action
+  clearTimeout(pendingTimer)
+  pendingTimer = setTimeout(() => { pendingAction.value = null }, 3000)
+}
+
+function cancelPending() {
+  if (!pendingAction.value) return
+  pendingAction.value = null
+  clearTimeout(pendingTimer)
+}
+
+function onDocPointerDown(e) {
+  if (!pendingAction.value) return
+  const btn = e.target.closest(`.reset-btn[data-action="${pendingAction.value}"]`)
+  if (btn) return
+  cancelPending()
+}
+
+function onDocKeydown(e) {
+  if (e.key === 'Escape') cancelPending()
+}
+
+onMounted(() => {
+  document.addEventListener('pointerdown', onDocPointerDown)
+  document.addEventListener('keydown', onDocKeydown)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('pointerdown', onDocPointerDown)
+  document.removeEventListener('keydown', onDocKeydown)
+})
+
 // Lock drag to vertical axis by zeroing the X component of SortableJS's matrix transform
 function onDragStart() {
   dragging.value = true
@@ -191,16 +237,30 @@ function lockHorizontal() {
           class="file-input"
           @change="handleImport"
         />
-        <button class="reset-btn" @click="clearDone" title="Clear completed tasks">
+        <button
+          class="reset-btn"
+          :class="{ 'reset-btn--confirm': pendingAction === 'clearDone' }"
+          @click="requestConfirm('clearDone')"
+          :title="pendingAction === 'clearDone' ? 'Click again to confirm' : 'Clear completed tasks'"
+          data-action="clearDone"
+        >
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path d="M2 4l2 2 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
             <path d="M8.5 8.5l4 4M12.5 8.5l-4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
           </svg>
+          <span class="confirm-label">Confirm?</span>
         </button>
-        <button class="reset-btn" @click="resetApp" title="Reset — clears all tasks">
+        <button
+          class="reset-btn"
+          :class="{ 'reset-btn--confirm': pendingAction === 'reset' }"
+          @click="requestConfirm('reset')"
+          :title="pendingAction === 'reset' ? 'Click again to confirm' : 'Reset — clears all tasks'"
+          data-action="reset"
+        >
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path d="M2 7a5 5 0 1 0 1.5-3.5L2 2v3h3L3.5 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
+          <span class="confirm-label">Confirm?</span>
         </button>
       </div>
       <p class="subtitle" :class="{ 'done-all': todos.length && !activeTodos.length }">
@@ -289,8 +349,9 @@ function lockHorizontal() {
 
 .reset-btn {
   flex-shrink: 0;
-  width: 32px;
+  min-width: 32px;
   height: 32px;
+  padding: 0;
   border: none;
   background: none;
   border-radius: 6px;
@@ -299,8 +360,11 @@ function lockHorizontal() {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 4px;
+  white-space: nowrap;
+  overflow: hidden;
   opacity: 0;
-  transition: opacity var(--transition), color var(--transition), background var(--transition);
+  transition: opacity var(--transition), color var(--transition), background var(--transition), padding var(--transition);
   margin-top: 4px;
 }
 
@@ -312,6 +376,32 @@ function lockHorizontal() {
   opacity: 1 !important;
   color: var(--text-secondary);
   background: var(--border);
+}
+
+.reset-btn--confirm,
+.reset-btn--confirm:hover {
+  opacity: 1 !important;
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  padding: 0 8px 0 6px;
+}
+
+.reset-btn--confirm:hover {
+  background: rgba(239, 68, 68, 0.18);
+  color: #dc2626;
+}
+
+.confirm-label {
+  font-size: 12px;
+  font-weight: 500;
+  max-width: 0;
+  opacity: 0;
+  transition: max-width 200ms ease, opacity 150ms ease;
+}
+
+.reset-btn--confirm .confirm-label {
+  max-width: 80px;
+  opacity: 1;
 }
 
 @media (hover: none) {
