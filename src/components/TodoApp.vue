@@ -201,7 +201,8 @@ function lockHorizontal() {
 
 <template>
   <div class="layout">
-    <header class="header">
+    <header class="header" @mouseleave="cancelPending">
+
       <div class="header-row">
         <div class="title-wrap" :class="{ 'title-wrap--editing': editingName }">
           <h1
@@ -242,7 +243,6 @@ function lockHorizontal() {
           class="reset-btn"
           :class="{ 'reset-btn--confirm': pendingAction === 'clearDone' }"
           @click="requestConfirm('clearDone')"
-          @mouseleave="pendingAction === 'clearDone' && cancelPending()"
           :title="pendingAction === 'clearDone' ? 'Click again to confirm' : 'Clear completed tasks'"
           data-action="clearDone"
         >
@@ -258,7 +258,6 @@ function lockHorizontal() {
           class="reset-btn"
           :class="{ 'reset-btn--confirm': pendingAction === 'reset' }"
           @click="requestConfirm('reset')"
-          @mouseleave="pendingAction === 'reset' && cancelPending()"
           :title="pendingAction === 'reset' ? 'Click again to confirm' : 'Reset — clears all tasks'"
           data-action="reset"
         >
