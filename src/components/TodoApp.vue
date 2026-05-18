@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 import draggable from 'vuedraggable'
 import TodoCard from './TodoCard.vue'
 
@@ -126,6 +126,53 @@ function clearDone() {
   }, 200)
 }
 
+const pendingAction = ref(null)
+let pendingTimer = null
+
+function requestConfirm(action) {
+  if (action === 'clearDone' && !todos.value.some(t => t.done)) return
+  if (action === 'reset' && todos.value.length === 0 && listName.value === 'Todo') return
+
+  if (pendingAction.value === action) {
+    pendingAction.value = null
+    clearTimeout(pendingTimer)
+    if (action === 'reset') resetApp()
+    else if (action === 'clearDone') clearDone()
+    return
+  }
+  pendingAction.value = action
+  clearTimeout(pendingTimer)
+  pendingTimer = setTimeout(() => { pendingAction.value = null }, 3000)
+}
+
+function cancelPending() {
+  if (!pendingAction.value) return
+  pendingAction.value = null
+  clearTimeout(pendingTimer)
+}
+
+function onDocPointerDown(e) {
+  if (!pendingAction.value) return
+  // Let any danger button's own click handler decide (confirm / switch) — cancelling here
+  // would shrink the pending button mid-click and shift the click target out from the cursor.
+  if (e.target.closest('.reset-btn[data-action]')) return
+  cancelPending()
+}
+
+function onDocKeydown(e) {
+  if (e.key === 'Escape') cancelPending()
+}
+
+onMounted(() => {
+  document.addEventListener('pointerdown', onDocPointerDown)
+  document.addEventListener('keydown', onDocKeydown)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('pointerdown', onDocPointerDown)
+  document.removeEventListener('keydown', onDocKeydown)
+})
+
 // Lock drag to vertical axis by zeroing the X component of SortableJS's matrix transform
 function onDragStart() {
   dragging.value = true
@@ -154,7 +201,8 @@ function lockHorizontal() {
 
 <template>
   <div class="layout">
-    <header class="header">
+    <header class="header" @mouseleave="cancelPending">
+
       <div class="header-row">
         <div class="title-wrap" :class="{ 'title-wrap--editing': editingName }">
           <h1
@@ -191,15 +239,33 @@ function lockHorizontal() {
           class="file-input"
           @change="handleImport"
         />
-        <button class="reset-btn" @click="clearDone" title="Clear completed tasks">
+        <button
+          class="reset-btn"
+          :class="{ 'reset-btn--confirm': pendingAction === 'clearDone' }"
+          @click="requestConfirm('clearDone')"
+          :title="pendingAction === 'clearDone' ? 'Click again to confirm' : 'Clear completed tasks'"
+          data-action="clearDone"
+        >
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path d="M2 4l2 2 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
             <path d="M8.5 8.5l4 4M12.5 8.5l-4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
           </svg>
+          <svg v-if="pendingAction === 'clearDone'" class="confirm-progress" viewBox="0 0 32 32" aria-hidden="true">
+            <rect x="1" y="1" width="30" height="30" rx="5" ry="5" pathLength="100" />
+          </svg>
         </button>
-        <button class="reset-btn" @click="resetApp" title="Reset — clears all tasks">
+        <button
+          class="reset-btn"
+          :class="{ 'reset-btn--confirm': pendingAction === 'reset' }"
+          @click="requestConfirm('reset')"
+          :title="pendingAction === 'reset' ? 'Click again to confirm' : 'Reset — clears all tasks'"
+          data-action="reset"
+        >
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path d="M2 7a5 5 0 1 0 1.5-3.5L2 2v3h3L3.5 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <svg v-if="pendingAction === 'reset'" class="confirm-progress" viewBox="0 0 32 32" aria-hidden="true">
+            <rect x="1" y="1" width="30" height="30" rx="5" ry="5" pathLength="100" />
           </svg>
         </button>
       </div>
@@ -288,6 +354,7 @@ function lockHorizontal() {
 }
 
 .reset-btn {
+  position: relative;
   flex-shrink: 0;
   width: 32px;
   height: 32px;
@@ -304,6 +371,29 @@ function lockHorizontal() {
   margin-top: 4px;
 }
 
+.confirm-progress {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.confirm-progress rect {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 0;
+  animation: confirm-deplete 3000ms linear forwards;
+}
+
+@keyframes confirm-deplete {
+  to { stroke-dashoffset: 100; }
+}
+
 .header:hover .reset-btn {
   opacity: 0.4;
 }
@@ -312,6 +402,22 @@ function lockHorizontal() {
   opacity: 1 !important;
   color: var(--text-secondary);
   background: var(--border);
+}
+
+.reset-btn--confirm {
+  opacity: 1 !important;
+}
+
+.reset-btn--confirm[data-action="clearDone"],
+.reset-btn--confirm[data-action="clearDone"]:hover {
+  color: #f97316;
+  background: rgba(249, 115, 22, 0.14);
+}
+
+.reset-btn--confirm[data-action="reset"],
+.reset-btn--confirm[data-action="reset"]:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.14);
 }
 
 @media (hover: none) {
