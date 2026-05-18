@@ -250,6 +250,9 @@ function lockHorizontal() {
             <path d="M2 4l2 2 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
             <path d="M8.5 8.5l4 4M12.5 8.5l-4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
           </svg>
+          <svg v-if="pendingAction === 'clearDone'" class="confirm-progress" viewBox="0 0 32 32" aria-hidden="true">
+            <rect x="1" y="1" width="30" height="30" rx="5" ry="5" pathLength="100" />
+          </svg>
         </button>
         <button
           class="reset-btn"
@@ -261,6 +264,9 @@ function lockHorizontal() {
         >
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path d="M2 7a5 5 0 1 0 1.5-3.5L2 2v3h3L3.5 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <svg v-if="pendingAction === 'reset'" class="confirm-progress" viewBox="0 0 32 32" aria-hidden="true">
+            <rect x="1" y="1" width="30" height="30" rx="5" ry="5" pathLength="100" />
           </svg>
         </button>
       </div>
@@ -349,6 +355,7 @@ function lockHorizontal() {
 }
 
 .reset-btn {
+  position: relative;
   flex-shrink: 0;
   width: 32px;
   height: 32px;
@@ -363,6 +370,29 @@ function lockHorizontal() {
   opacity: 0;
   transition: opacity var(--transition), color var(--transition), background var(--transition);
   margin-top: 4px;
+}
+
+.confirm-progress {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.confirm-progress rect {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 0;
+  animation: confirm-deplete 3000ms linear forwards;
+}
+
+@keyframes confirm-deplete {
+  to { stroke-dashoffset: 100; }
 }
 
 .header:hover .reset-btn {
