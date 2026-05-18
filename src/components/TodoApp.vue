@@ -153,8 +153,9 @@ function cancelPending() {
 
 function onDocPointerDown(e) {
   if (!pendingAction.value) return
-  const btn = e.target.closest(`.reset-btn[data-action="${pendingAction.value}"]`)
-  if (btn) return
+  // Let any danger button's own click handler decide (confirm / switch) — cancelling here
+  // would shrink the pending button mid-click and shift the click target out from the cursor.
+  if (e.target.closest('.reset-btn[data-action]')) return
   cancelPending()
 }
 
