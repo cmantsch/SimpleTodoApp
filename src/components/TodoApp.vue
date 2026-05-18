@@ -114,6 +114,18 @@ function removeTodo(id) {
   }, 200)
 }
 
+function clearDone() {
+  const doneIds = todos.value.filter(t => t.done).map(t => t.id)
+  if (doneIds.length === 0) return
+  removingIds.value = new Set([...removingIds.value, ...doneIds])
+  setTimeout(() => {
+    const doneSet = new Set(doneIds)
+    todos.value = todos.value.filter(t => !doneSet.has(t.id))
+    doneIds.forEach(id => removingIds.value.delete(id))
+    removingIds.value = new Set(removingIds.value)
+  }, 200)
+}
+
 // Lock drag to vertical axis by zeroing the X component of SortableJS's matrix transform
 function onDragStart() {
   dragging.value = true
@@ -179,6 +191,12 @@ function lockHorizontal() {
           class="file-input"
           @change="handleImport"
         />
+        <button class="reset-btn" @click="clearDone" title="Clear completed tasks">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M2 4l2 2 4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M8.5 8.5l4 4M12.5 8.5l-4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
+        </button>
         <button class="reset-btn" @click="resetApp" title="Reset — clears all tasks">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path d="M2 7a5 5 0 1 0 1.5-3.5L2 2v3h3L3.5 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
