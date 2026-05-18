@@ -26,6 +26,7 @@ watch(listName, val => localStorage.setItem(NAME_KEY, val))
 const editingName = ref(false)
 const editNameValue = ref('')
 const nameInput = ref(null)
+const fileInput = ref(null)
 
 async function startNameEdit() {
   editNameValue.value = listName.value
@@ -62,6 +63,46 @@ function resetApp() {
   localStorage.removeItem(STORAGE_KEY)
   listName.value = 'Todo'
   localStorage.removeItem(NAME_KEY)
+}
+
+function exportTodos() {
+  const payload = JSON.stringify({ name: listName.value, todos: todos.value }, null, 2)
+  const blob = new Blob([payload], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const safeName = (listName.value || 'todos').replace(/[^a-z0-9-_]+/gi, '-').replace(/^-+|-+$/g, '') || 'todos'
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `${safeName}.json`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+function triggerImport() {
+  fileInput.value?.click()
+}
+
+function handleImport(event) {
+  const file = event.target.files?.[0]
+  event.target.value = ''
+  if (!file) return
+  const reader = new FileReader()
+  reader.onload = e => {
+    try {
+      const parsed = JSON.parse(e.target.result)
+      const rawTodos = Array.isArray(parsed) ? parsed : parsed?.todos
+      if (!Array.isArray(rawTodos)) throw new Error('Invalid format')
+      const imported = rawTodos
+        .filter(t => t && typeof t.text === 'string')
+        .map(t => ({ id: nextId++, text: t.text, done: Boolean(t.done) }))
+      todos.value = imported
+      if (parsed && typeof parsed.name === 'string' && parsed.name.trim()) {
+        listName.value = parsed.name.trim()
+      }
+    } catch {
+      alert('Could not import: file is not a valid todo JSON export.')
+    }
+  }
+  reader.readAsText(file)
 }
 
 function removeTodo(id) {
@@ -121,6 +162,23 @@ function lockHorizontal() {
             @keydown.escape="cancelNameEdit"
           />
         </div>
+        <button class="reset-btn" @click="exportTodos" title="Export tasks to JSON">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M7 2v6.5M4.5 6L7 8.5 9.5 6M2.5 11.5h9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <button class="reset-btn" @click="triggerImport" title="Import tasks from JSON">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <path d="M7 8.5V2M4.5 4.5L7 2l2.5 2.5M2.5 11.5h9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <input
+          ref="fileInput"
+          type="file"
+          accept="application/json,.json"
+          class="file-input"
+          @change="handleImport"
+        />
         <button class="reset-btn" @click="resetApp" title="Reset — clears all tasks">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
             <path d="M2 7a5 5 0 1 0 1.5-3.5L2 2v3h3L3.5 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
@@ -205,6 +263,10 @@ function lockHorizontal() {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.file-input {
+  display: none;
 }
 
 .reset-btn {
