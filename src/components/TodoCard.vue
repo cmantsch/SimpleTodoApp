@@ -1,7 +1,7 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 
-defineProps({
+const props = defineProps({
   todo: { type: Object, required: true },
   removing: { type: Boolean, default: false },
 })
@@ -12,6 +12,52 @@ const isNew = ref(true)
 onMounted(() => {
   setTimeout(() => { isNew.value = false }, 280)
 })
+
+const textEl = ref(null)
+const editing = ref(false)
+let snapshot = ''
+
+onMounted(() => {
+  if (textEl.value) textEl.value.textContent = props.todo.text
+})
+
+watch(
+  () => props.todo.text,
+  val => {
+    if (!editing.value && textEl.value && textEl.value.textContent !== val) {
+      textEl.value.textContent = val
+    }
+  }
+)
+
+function onFocus() {
+  editing.value = true
+  snapshot = props.todo.text
+}
+
+function onBlur() {
+  editing.value = false
+  const next = (textEl.value?.textContent ?? '').trim().slice(0, 200)
+  if (next && next !== props.todo.text) {
+    props.todo.text = next
+    if (textEl.value && textEl.value.textContent !== next) {
+      textEl.value.textContent = next
+    }
+  } else if (!next && textEl.value) {
+    textEl.value.textContent = props.todo.text
+  }
+}
+
+function onKeydown(e) {
+  if (e.key === 'Enter') {
+    e.preventDefault()
+    textEl.value?.blur()
+  } else if (e.key === 'Escape') {
+    e.preventDefault()
+    if (textEl.value) textEl.value.textContent = snapshot
+    textEl.value?.blur()
+  }
+}
 </script>
 
 <template>
@@ -49,7 +95,17 @@ onMounted(() => {
       </span>
     </label>
 
-    <span class="todo-text">{{ todo.text }}</span>
+    <span
+      ref="textEl"
+      class="todo-text"
+      :class="{ 'todo-text--editing': editing }"
+      contenteditable="plaintext-only"
+      spellcheck="false"
+      title="Click to edit"
+      @focus="onFocus"
+      @blur="onBlur"
+      @keydown="onKeydown"
+    ></span>
 
     <button class="delete-btn" @click="$emit('remove')" title="Delete task">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -172,12 +228,37 @@ onMounted(() => {
 
 .todo-text {
   flex: 1;
+  min-width: 0;
   font-size: 15px;
   color: var(--text-primary);
   line-height: 1.4;
-  transition: color var(--transition);
+  transition:
+    color var(--transition),
+    background var(--transition),
+    box-shadow var(--transition);
   text-decoration-line: none;
   text-decoration-color: transparent;
+  padding: 4px 8px;
+  margin: -4px -8px;
+  border-radius: 6px;
+  cursor: text;
+  word-break: break-word;
+  white-space: pre-wrap;
+  outline: none;
+  user-select: text;
+  caret-color: var(--accent);
+  box-shadow: inset 0 -2px 0 0 transparent;
+}
+
+.todo-text:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.todo-text--editing,
+.todo-text--editing:hover {
+  background: rgba(79, 70, 229, 0.06);
+  box-shadow: inset 0 -2px 0 0 var(--accent);
+  border-radius: 6px 6px 0 0;
 }
 
 .card--done .todo-text {
