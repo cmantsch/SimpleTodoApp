@@ -16,13 +16,23 @@ All data is stored in your browser's `localStorage`. Nothing is synced, tracked,
 ### Manage your tasks
 - Add tasks and check them off as you go
 - Delete individual tasks with the × button
-- Reset the entire list (and title) with the reset button in the header
+- **Clear all completed** tasks at once with the dedicated button in the header
+- **Reset** the entire list (and title) with the reset button in the header
+
+### Inline task editing
+Click any task's text to edit it in place. The cursor is placed at the exact character you clicked. Confirm with **Enter** or by clicking away; press **Escape** to cancel without saving.
 
 ### Drag to reorder
 Grab the handle on the left of any task to drag it into a new position. The order is saved automatically.
 
 ### Editable list title
 Click the title to rename your list. Edits are saved when you press **Enter**, click away, or press **Escape** to cancel.
+
+### Confirmed destructive actions
+Buttons that permanently change your data (clear completed, reset) require a second click to confirm. The button shifts to a distinct color and shows a 3-second clockwise countdown border — move the mouse away at any point to cancel safely.
+
+### JSON export and import
+Export your entire task list (text, completion state, and order) as a JSON file with one click. Import a previously exported file to restore or merge task lists across devices or browsers.
 
 ### Persistent state
 Your tasks and list title survive page refreshes and browser restarts — everything is saved locally as you type.
@@ -31,7 +41,7 @@ Your tasks and list title survive page refreshes and browser restarts — everyt
 - Smooth entrance animation when a task is added
 - Tasks fade and slide out when removed
 - "All done ✓" indicator when every task is checked off
-- Fully responsive layout
+- Fully responsive layout, optimized for mobile
 
 ---
 
