@@ -397,30 +397,40 @@ function lockHorizontal() {
   to { stroke-dashoffset: 100; }
 }
 
-.header:hover .reset-btn {
-  opacity: 0.4;
-}
-
-.reset-btn:hover {
-  opacity: 1 !important;
-  color: var(--text-secondary);
-  background: var(--border);
-}
-
 .reset-btn--confirm {
   opacity: 1 !important;
 }
 
-.reset-btn--confirm[data-action="clearDone"],
-.reset-btn--confirm[data-action="clearDone"]:hover {
+.reset-btn--confirm[data-action="clearDone"] {
   color: #f97316;
   background: rgba(249, 115, 22, 0.14);
 }
 
-.reset-btn--confirm[data-action="reset"],
-.reset-btn--confirm[data-action="reset"]:hover {
+.reset-btn--confirm[data-action="reset"] {
   color: #ef4444;
   background: rgba(239, 68, 68, 0.14);
+}
+
+@media (hover: hover) {
+  .header:hover .reset-btn {
+    opacity: 0.4;
+  }
+
+  .reset-btn:hover {
+    opacity: 1 !important;
+    color: var(--text-secondary);
+    background: var(--border);
+  }
+
+  .reset-btn--confirm[data-action="clearDone"]:hover {
+    color: #f97316;
+    background: rgba(249, 115, 22, 0.14);
+  }
+
+  .reset-btn--confirm[data-action="reset"]:hover {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.14);
+  }
 }
 
 @media (hover: none) {
@@ -446,8 +456,10 @@ h1.title {
   transition: background 200ms ease;
 }
 
-h1.title:hover {
-  background: rgba(0, 0, 0, 0.05);
+@media (hover: hover) {
+  h1.title:hover {
+    background: rgba(0, 0, 0, 0.05);
+  }
 }
 
 .title-wrap {
@@ -535,9 +547,11 @@ h1.title:hover {
   transition: background var(--transition), transform var(--transition), opacity var(--transition);
 }
 
-.add-btn:hover:not(:disabled) {
-  background: var(--accent-hover);
-  transform: scale(1.04);
+@media (hover: hover) {
+  .add-btn:hover:not(:disabled) {
+    background: var(--accent-hover);
+    transform: scale(1.04);
+  }
 }
 
 .add-btn:active:not(:disabled) {
