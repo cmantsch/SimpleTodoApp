@@ -39,7 +39,8 @@ test('clears input after adding a todo', async ({ page }) => {
 
 test('does not add a whitespace-only todo', async ({ page }) => {
   await page.fill('.add-input', '   ')
-  await page.locator('.add-btn').click()
+  // Button stays disabled for whitespace-only input — no click needed
+  await expect(page.locator('.add-btn')).toBeDisabled()
   await expect(page.locator('.empty-state')).toBeVisible()
 })
 

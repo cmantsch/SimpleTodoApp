@@ -42,6 +42,9 @@ function saveName() {
 }
 
 function cancelNameEdit() {
+  // Reset editNameValue first so the blur event that fires when v-if removes
+  // the focused input calls saveName with the original value (a no-op).
+  editNameValue.value = listName.value
   editingName.value = false
 }
 
