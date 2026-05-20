@@ -58,6 +58,7 @@ test('shows correct remaining count for multiple todos', async ({ page }) => {
 test('marks a todo as done via checkbox', async ({ page }) => {
   await page.fill('.add-input', 'Read a book')
   await page.keyboard.press('Enter')
+  await page.locator('.card:not(.card--new)').waitFor()
   await page.locator('.checkbox-wrap').click()
   await expect(page.locator('.card--done')).toBeVisible()
   await expect(page.locator('.subtitle')).toContainText('All done')
@@ -66,6 +67,7 @@ test('marks a todo as done via checkbox', async ({ page }) => {
 test('unchecking a done todo decrements remaining count', async ({ page }) => {
   await page.fill('.add-input', 'Task')
   await page.keyboard.press('Enter')
+  await page.locator('.card:not(.card--new)').waitFor()
   await page.locator('.checkbox-wrap').click()
   await expect(page.locator('.subtitle')).toContainText('All done')
   await page.locator('.checkbox-wrap').click()
@@ -77,9 +79,10 @@ test('unchecking a done todo decrements remaining count', async ({ page }) => {
 test('deletes a todo via the delete button', async ({ page }) => {
   await page.fill('.add-input', 'Delete me')
   await page.keyboard.press('Enter')
+  await page.locator('.card:not(.card--new)').waitFor()
   await page.hover('.card')
   await page.locator('.delete-btn').click()
-  await expect(page.locator('.empty-state')).toBeVisible({ timeout: 1000 })
+  await expect(page.locator('.empty-state')).toBeVisible()
 })
 
 // ─── Editing todos ───────────────────────────────────────────────────────────
@@ -87,6 +90,7 @@ test('deletes a todo via the delete button', async ({ page }) => {
 test('edits todo text inline and saves on Enter', async ({ page }) => {
   await page.fill('.add-input', 'Original text')
   await page.keyboard.press('Enter')
+  await page.locator('.card:not(.card--new)').waitFor()
   await page.locator('.todo-text').click()
   await page.keyboard.press('Control+A')
   await page.keyboard.type('Edited text')
@@ -98,6 +102,7 @@ test('edits todo text inline and saves on Enter', async ({ page }) => {
 test('cancels todo edit on Escape and restores original text', async ({ page }) => {
   await page.fill('.add-input', 'Keep this')
   await page.keyboard.press('Enter')
+  await page.locator('.card:not(.card--new)').waitFor()
   await page.locator('.todo-text').click()
   await page.keyboard.press('Control+A')
   await page.keyboard.type('Discard me')
@@ -127,6 +132,7 @@ test('cancels list rename on Escape', async ({ page }) => {
 test('reset requires double-click confirmation', async ({ page }) => {
   await page.fill('.add-input', 'Important task')
   await page.keyboard.press('Enter')
+  await page.locator('.card:not(.card--new)').waitFor()
   await page.hover('header')
   const resetBtn = page.locator('[data-action="reset"]')
   await resetBtn.click()
@@ -141,6 +147,7 @@ test('reset requires double-click confirmation', async ({ page }) => {
 test('pending confirmation is cancelled by Escape', async ({ page }) => {
   await page.fill('.add-input', 'Task')
   await page.keyboard.press('Enter')
+  await page.locator('.card:not(.card--new)').waitFor()
   await page.hover('header')
   await page.locator('[data-action="reset"]').click()
   await expect(page.locator('[data-action="reset"]')).toHaveClass(/reset-btn--confirm/)
@@ -154,6 +161,7 @@ test('clear done removes completed todos', async ({ page }) => {
   await page.fill('.add-input', 'Done task')
   await page.keyboard.press('Enter')
   // "Done task" is at the top (unshift)
+  await page.locator('.card:not(.card--new)').first().waitFor()
   await page.locator('.checkbox-wrap').first().click()
   await page.hover('header')
   const clearDoneBtn = page.locator('[data-action="clearDone"]')
