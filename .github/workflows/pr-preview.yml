@@ -9,7 +9,28 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  test:
+    name: Unit & Integration
+    if: github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run test:unit
+
   preview:
+    name: Deploy Preview
+    needs: [test]
+    if: always() && (needs.test.result == 'success' || github.event.action == 'closed')
     runs-on: ubuntu-latest
     permissions:
       contents: write
