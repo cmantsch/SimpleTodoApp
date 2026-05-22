@@ -1,0 +1,81 @@
+name: iOS TestFlight Deploy
+
+# Secrets required in repository Settings → Secrets and variables → Actions:
+#
+#   APP_STORE_CONNECT_KEY_ID    – Key ID from App Store Connect → Users and Access → Integrations → API Keys
+#   APP_STORE_CONNECT_ISSUER_ID – Issuer ID from the same page
+#   APP_STORE_CONNECT_KEY       – Contents of the .p8 key file, base64-encoded:
+#                                   base64 -i AuthKey_XXXXXX.p8 | tr -d '\n'
+#   CERTIFICATES_P12            – Distribution certificate exported from Keychain as .p12, base64-encoded:
+#                                   base64 -i Certificates.p12 | tr -d '\n'
+#   CERTIFICATES_P12_PASSWORD   – Password used when exporting the .p12
+#   APPLE_TEAM_ID               – 10-character Team ID from developer.apple.com/account
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ios-testflight
+  cancel-in-progress: true
+
+jobs:
+  web-tests:
+    name: Web Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run test:unit
+
+  build-and-deploy:
+    name: Build & Deploy to TestFlight
+    needs: web-tests
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install JS dependencies
+        run: npm ci
+
+      - name: Build web assets
+        run: npm run build
+
+      - name: Sync Capacitor web assets into iOS project
+        run: npx cap sync ios
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+          working-directory: ios/App
+
+      - name: Decode distribution certificate
+        env:
+          CERTIFICATES_P12: ${{ secrets.CERTIFICATES_P12 }}
+        run: |
+          echo "$CERTIFICATES_P12" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          echo "CERTIFICATE_PATH=$RUNNER_TEMP/cert.p12" >> "$GITHUB_ENV"
+
+      - name: Build and upload to TestFlight
+        working-directory: ios/App
+        env:
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_KEY: ${{ secrets.APP_STORE_CONNECT_KEY }}
+          CERTIFICATES_P12_PASSWORD: ${{ secrets.CERTIFICATES_P12_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: bundle exec fastlane beta
