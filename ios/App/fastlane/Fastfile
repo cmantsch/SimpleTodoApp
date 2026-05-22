@@ -38,7 +38,9 @@ platform :ios do
       scheme: "App",
       configuration: "Release",
       export_method: "app-store",
-      xcargs: "CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=#{ENV.fetch('APPLE_TEAM_ID')}",
+      # PROVISIONING_PROFILE + CODE_SIGN_IDENTITY apply to the archive step;
+      # export_options applies to the export step — both are needed.
+      xcargs: "CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=#{ENV.fetch('APPLE_TEAM_ID')} PROVISIONING_PROFILE=#{ENV['SIGH_UUID']} CODE_SIGN_IDENTITY='Apple Distribution'",
       export_options: {
         teamID: ENV.fetch("APPLE_TEAM_ID"),
         signingStyle: "manual",
