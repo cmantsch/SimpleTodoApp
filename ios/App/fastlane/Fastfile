@@ -21,18 +21,10 @@ platform :ios do
     )
 
     # Downloads the App Store distribution profile into
-    # ~/Library/MobileDevice/Provisioning Profiles/ and sets SIGH_* lane context
+    # ~/Library/MobileDevice/Provisioning Profiles/ and sets ENV["SIGH_NAME"]
     get_provisioning_profile(
       api_key: api_key,
       app_identifier: "ch.mants.simpletodoapp"
-    )
-
-    update_code_signing_settings(
-      use_automatic_signing: false,
-      path: "App.xcodeproj",
-      team_id: ENV.fetch("APPLE_TEAM_ID"),
-      profile_name: lane_context[SharedValues::SIGH_PROFILE_NAME],
-      code_sign_identity: "Apple Distribution"
     )
 
     set_info_plist_value(
@@ -46,10 +38,12 @@ platform :ios do
       scheme: "App",
       configuration: "Release",
       export_method: "app-store",
+      xcargs: "CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM=#{ENV.fetch('APPLE_TEAM_ID')}",
       export_options: {
         teamID: ENV.fetch("APPLE_TEAM_ID"),
+        signingStyle: "manual",
         provisioningProfiles: {
-          "ch.mants.simpletodoapp" => lane_context[SharedValues::SIGH_PROFILE_NAME]
+          "ch.mants.simpletodoapp" => ENV["SIGH_NAME"]
         }
       }
     )
