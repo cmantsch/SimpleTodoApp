@@ -342,6 +342,18 @@ function lockHorizontal() {
   }
 }
 
+:global(.ios-native) .layout {
+  padding-top: calc(48px + env(safe-area-inset-top));
+  padding-bottom: calc(80px + env(safe-area-inset-bottom));
+}
+
+@media (max-width: 480px) {
+  :global(.ios-native) .layout {
+    padding-top: calc(28px + env(safe-area-inset-top));
+    padding-bottom: calc(60px + env(safe-area-inset-bottom));
+  }
+}
+
 .header {
   margin-bottom: 32px;
 }
